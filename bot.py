@@ -125,24 +125,24 @@ async def cmd_start(message: types.Message):
     }
     
     welcome_text = f"""
-💀 ДОБРО ПОЖАЛОВАТЬ В TARGET
+ 💀 ДОБРО ПОЖАЛОВАТЬ В TARGET
 
-🔐 ВАШИ ДАННЫЕ:
-├ 🆔 ID: {user_id}
-├ 🔢 Код: {user_data['user_code']}
-├ 👁️ Никнейм: @{username}
-└ 🦇 Наставник: {user_data.get('mentor', 'не выбрано')}
+ 🔐 ВАШИ ДАННЫЕ:
+ ├ 🆔 ID: {user_id}
+ ├ 🔢 Код: {user_data['user_code']}
+ ├ 👁️ Никнейм: @{username}
+ └ 🦇 Наставник: {user_data.get('mentor', 'не выбрано')}
 
-⏱️ В ПРОЕКТЕ ОПРЕДЕЛЁННОЕ КОЛИЧЕСТВО ЧАСОВ
-Счёт начинается после активации
+ ⏱️ В ПРОЕКТЕ ОПРЕДЕЛЁННОЕ КОЛИЧЕСТВО ЧАСОВ
+ Счёт начинается после активации
 
-💰 ЗАРАБОТОК: ${user_data.get('balance', 0):.2f}
-"""
+ 💰 ЗАРАБОТОК: ${user_data.get('balance', 0):.2f}
+ """
     
     await message.answer(welcome_text, reply_markup=get_main_menu())
 
-@dp.message(F.text == "💀 ИНФОРМАЦИЯ")
-async def btn_info(message: types.Message):
+ @dp.message(F.text == "💀 ИНФОРМАЦИЯ")
+ async def btn_info(message: types.Message):
     builder = InlineKeyboardBuilder()
     builder.add(InlineKeyboardButton(text="💰 БАЛАНС КОМАНДЫ", url=Config.TEAM_CHAT_LINK))
     builder.add(InlineKeyboardButton(text="💬 ОБЩИЙ ЧАТ", url=Config.GENERAL_CHAT_LINK))
@@ -150,8 +150,8 @@ async def btn_info(message: types.Message):
     
     await message.answer("🕸️ ИНФОРМАЦИЯ О ПРОЕКТЕ:", reply_markup=builder.as_markup())
 
-@dp.message(F.text == "👁️ ПРОФИЛЬ")
-async def btn_profile(message: types.Message):
+ @dp.message(F.text == "👁️ ПРОФИЛЬ")
+ async def btn_profile(message: types.Message):
     user_id = message.from_user.id
     user_data = await SimpleDB.get_user(user_id)
     
@@ -167,27 +167,27 @@ async def btn_profile(message: types.Message):
     minutes = int((session_time % 3600) // 60)
     
     profile_text = f"""
-⚰️ ВАШ ПРОФИЛЬ:
+ ⚰️ ВАШ ПРОФИЛЬ:
 
-├ 🔢 Код: {user_data['user_code']}
-├ 👁️ Никнейм: @{user_data.get('username', 'скрыт')}
-├ 💰 Баланс: ${user_data.get('balance', 0):.2f}
-├ 🦇 Наставник: {user_data.get('mentor', 'не выбрано')}
-└ ⏱️ Время в проекте: {hours}ч {minutes}м
-"""
+ ├ 🔢 Код: {user_data['user_code']}
+ ├ 👁️ Никнейм: @{user_data.get('username', 'скрыт')}
+ ├ 💰 Баланс: ${user_data.get('balance', 0):.2f}
+ ├ 🦇 Наставник: {user_data.get('mentor', 'не выбрано')}
+ └ ⏱️ Время в проекте: {hours}ч {minutes}м
+ """
     
     await message.answer(profile_text)
 
-@dp.message(F.text == "🔪 TARGET")
-async def btn_target(message: types.Message):
+ @dp.message(F.text == "🔪 TARGET")
+ async def btn_target(message: types.Message):
     await message.answer("🔪 РАЗДЕЛ TARGET\n\nВыберите действие:", reply_markup=get_target_menu())
 
-@dp.message(F.text == "🦇 НАСТАВНИКИ")
-async def btn_mentors(message: types.Message):
+ @dp.message(F.text == "🦇 НАСТАВНИКИ")
+ async def btn_mentors(message: types.Message):
     await message.answer("🦇 ВЫБОР НАСТАВНИКА:", reply_markup=get_mentors_menu())
 
-@dp.message(F.text == "⛓️ СТАТИСТИКА")
-async def btn_stats(message: types.Message):
+ @dp.message(F.text == "⛓️ СТАТИСТИКА")
+ async def btn_stats(message: types.Message):
     user_id = message.from_user.id
     
     if user_id not in user_sessions:
@@ -198,17 +198,17 @@ async def btn_stats(message: types.Message):
     session_time = time.time() - session_data['start_time']
     
     stats_text = f"""
-🩸 ВАША СТАТИСТИКА:
+ 🩸 ВАША СТАТИСТИКА:
 
-├ 🔢 Код: {session_data['user_code']}
-├ ⏱️ Сессия: {int(session_time // 3600)}ч {int((session_time % 3600) // 60)}м
-├ 🦇 Наставник: {session_data['mentor']}
-└ 💰 Заработок: $0.00
-"""
+ ├ 🔢 Код: {session_data['user_code']}
+ ├ ⏱️ Сессия: {int(session_time // 3600)}ч {int((session_time % 3600) // 60)}м
+ ├ 🦇 Наставник: {session_data['mentor']}
+ └ 💰 Заработок: $0.00
+ """
     
     await message.answer(stats_text)
 
-target_buttons = [
+ target_buttons = [
     "👁️‍🗨️ Сканировать профиль жертвы",
     "⚰️ Создать",
     "🩸 Отправить", 
@@ -217,19 +217,19 @@ target_buttons = [
     "🐛 rainwormnet.py",
     "🔗 steal-link.py",
     "🧛 Сендер"
-]
+ ]
 
-for btn_text in target_buttons:
+ for btn_text in target_buttons:
     @dp.message(F.text == btn_text)
     async def target_handler(message: types.Message):
         await message.answer("⚠️ Временно недоступно")
 
-@dp.message(F.text == "↩️ Назад в меню")
-async def btn_back(message: types.Message):
+ @dp.message(F.text == "↩️ Назад в меню")
+ async def btn_back(message: types.Message):
     await message.answer("↩️ Возврат в меню", reply_markup=get_main_menu())
 
-@dp.callback_query(F.data.startswith("mentor_"))
-async def process_mentor(callback: types.CallbackQuery):
+ @dp.callback_query(F.data.startswith("mentor_"))
+ async def process_mentor(callback: types.CallbackQuery):
     user_id = callback.from_user.id
     mentor_map = {
         "mentor_vampeye": "🧛 vampeye",
@@ -248,14 +248,14 @@ async def process_mentor(callback: types.CallbackQuery):
     await callback.message.answer(f"✅ Наставник: {selected_mentor}")
     await callback.answer()
 
-@dp.message(Command("admin"))
-async def cmd_admin(message: types.Message):
+ @dp.message(Command("admin"))
+ async def cmd_admin(message: types.Message):
     if message.from_user.id != int(os.environ.get("ADMIN_ID", "0")):
         await message.answer("⛔ Нет доступа")
         return
     await message.answer("🩸 Админ панель")
-@dp.callback_query(F.data.startswith("parse_"))
-async def process_site_selection(callback: types.CallbackQuery):
+ @dp.callback_query(F.data.startswith("parse_"))
+ async def process_site_selection(callback: types.CallbackQuery):
     """Выбор сайта для парсинга"""
     site = callback.data.split("_")[1]  # osta или soov
     
@@ -276,8 +276,8 @@ async def process_site_selection(callback: types.CallbackQuery):
     )
     await callback.answer()
 
-@dp.callback_query(F.data.startswith("count_"))
-async def process_count_selection(callback: types.CallbackQuery):
+ @dp.callback_query(F.data.startswith("count_"))
+ async def process_count_selection(callback: types.CallbackQuery):
     """Выбор количества объявлений"""
     _, site, count = callback.data.split("_")
     
@@ -305,8 +305,8 @@ async def process_count_selection(callback: types.CallbackQuery):
     )
     await callback.answer()
 
-@dp.callback_query(F.data.startswith("final_"))
-async def process_final_selection(callback: types.CallbackQuery):
+ @dp.callback_query(F.data.startswith("final_"))
+ async def process_final_selection(callback: types.CallbackQuery):
     """Финальный парсинг"""
     _, site, count, category = callback.data.split("_")
     
@@ -330,31 +330,31 @@ async def process_final_selection(callback: types.CallbackQuery):
     not_recommended = total - duplicates - suitable
     
     result = f"""
-✅ *ПАРСИНГ ЗАВЕРШЁН*
+ ✅ *ПАРСИНГ ЗАВЕРШЁН*
 
-🌍 Сайт: {site.upper()}
-📁 Категория: {category}
-📊 Запрошено: {count} объявлений
+ 🌍 Сайт: {site.upper()}
+ 📁 Категория: {category}
+ 📊 Запрошено: {count} объявлений
 
-📈 *РЕЗУЛЬТАТЫ:*
-├ Найдено: {total}
-├ Дубликатов: {duplicates} (исключены)
-├ ✅ Подходит: {suitable}
-└ ⚠️ Не рекомендуется: {not_recommended}
+ 📈 *РЕЗУЛЬТАТЫ:*
+ ├ Найдено: {total}
+ ├ Дубликатов: {duplicates} (исключены)
+ ├ ✅ Подходит: {suitable}
+ └ ⚠️ Не рекомендуется: {not_recommended}
 
-💾 Результаты сохранены в базе
-🔒 Защита от дубликатов активна
+ 💾 Результаты сохранены в базе
+ 🔒 Защита от дубликатов активна
 
-📥 Для скачивания используйте /download
-"""
+ 📥 Для скачивания используйте /download
+ """
     
     await callback.message.edit_text(result, parse_mode="Markdown")
     await callback.answer()
 
 # ==================== АДМИН ПАНЕЛЬ ====================
 
-@dp.message(Command("admin"))
-async def cmd_admin(message: types.Message):
+ @dp.message(Command("admin"))
+ async def cmd_admin(message: types.Message):
     """Главное меню админа"""
     if message.from_user.id != Config.ADMIN_ID:
         await message.answer("⛔ Доступ запрещён")
@@ -369,8 +369,8 @@ async def cmd_admin(message: types.Message):
     builder.adjust(2)
     await message.answer("👑 *АДМИН ПАНЕЛЬ*", parse_mode="Markdown", reply_markup=builder.as_markup())
 
-@dp.callback_query(F.data == "admin_balance")
-async def admin_balance(callback: types.CallbackQuery):
+ @dp.callback_query(F.data == "admin_balance")
+ async def admin_balance(callback: types.CallbackQuery):
     """Изменение баланса"""
     await callback.message.answer(
         "💰 *ИЗМЕНЕНИЕ БАЛАНСА*\n\n"
@@ -384,8 +384,8 @@ async def admin_balance(callback: types.CallbackQuery):
     )
     await callback.answer()
 
-@dp.message(Command("setbalance"))
-async def set_balance(message: types.Message):
+ @dp.message(Command("setbalance"))
+ async def set_balance(message: types.Message):
     """Установка баланса пользователю"""
     if message.from_user.id != Config.ADMIN_ID:
         return
@@ -409,8 +409,8 @@ async def set_balance(message: types.Message):
     except ValueError:
         await message.answer("❌ Неверный формат данных. Используйте числа.")
 
-@dp.callback_query(F.data == "admin_users")
-async def admin_users(callback: types.CallbackQuery):
+ @dp.callback_query(F.data == "admin_users")
+ async def admin_users(callback: types.CallbackQuery):
     """Показать список пользователей"""
     if not users_db:
         await callback.message.answer("📭 Нет пользователей в базе")
@@ -434,15 +434,15 @@ async def admin_users(callback: types.CallbackQuery):
     await callback.message.answer(text, parse_mode="Markdown")
     await callback.answer()
 
-@dp.message(Command("users"))
-async def cmd_users(message: types.Message):
+ @dp.message(Command("users"))
+ async def cmd_users(message: types.Message):
     """Команда списка пользователей"""
     if message.from_user.id != Config.ADMIN_ID:
         return
     await admin_users(message)
 
-@dp.callback_query(F.data == "admin_stats")
-async def admin_stats(callback: types.CallbackQuery):
+ @dp.callback_query(F.data == "admin_stats")
+ async def admin_stats(callback: types.CallbackQuery):
     """Статистика системы"""
     total_users = len(users_db)
     total_balance = sum(user.get('balance', 0) for user in users_db.values())
@@ -450,23 +450,23 @@ async def admin_stats(callback: types.CallbackQuery):
     
     from datetime import datetime
     text = f"""
-📈 *СТАТИСТИКА СИСТЕМЫ:*
+ 📈 *СТАТИСТИКА СИСТЕМЫ:*
 
-👥 Пользователей: {total_users}
-💰 Общий баланс: ${total_balance:.2f}
-🟢 Активных сессий: {active_sessions}
-📅 Дата: {datetime.now().strftime('%d.%m.%Y %H:%M')}
+ 👥 Пользователей: {total_users}
+ 💰 Общий баланс: ${total_balance:.2f}
+ 🟢 Активных сессий: {active_sessions}
+ 📅 Дата: {datetime.now().strftime('%d.%m.%Y %H:%M')}
 
-⚙️ *СЕРВИС:*
-├ Бот: 🟢 Онлайн
-├ Railway: 🟢 Работает
-└ Обновлений: {total_users // 10}
-"""
+ ⚙️ *СЕРВИС:*
+ ├ Бот: 🟢 Онлайн
+ ├ Railway: 🟢 Работает
+ └ Обновлений: {total_users // 10}
+ """
     await callback.message.answer(text, parse_mode="Markdown")
     await callback.answer()
 
-@dp.callback_query(F.data == "admin_broadcast")
-async def admin_broadcast(callback: types.CallbackQuery):
+ @dp.callback_query(F.data == "admin_broadcast")
+ async def admin_broadcast(callback: types.CallbackQuery):
     """Рассылка сообщений"""
     await callback.message.answer(
         "📢 *РАССЫЛКА СООБЩЕНИЙ*\n\n"
@@ -479,8 +479,8 @@ async def admin_broadcast(callback: types.CallbackQuery):
     )
     await callback.answer()
 
-@dp.message(Command("broadcast"))
-async def broadcast_message(message: types.Message):
+ @dp.message(Command("broadcast"))
+ async def broadcast_message(message: types.Message):
     """Рассылка сообщения всем пользователям"""
     if message.from_user.id != Config.ADMIN_ID:
         return
@@ -492,10 +492,10 @@ async def broadcast_message(message: types.Message):
     
     # Подтверждение
     confirm_text = f"""
-📢 *ПОДТВЕРЖДЕНИЕ РАССЫЛКИ*
+ 📢 *ПОДТВЕРЖДЕНИЕ РАССЫЛКИ*
 
-Сообщение:
-{text}
+ Сообщение:
+ {text}
 
 Кому: {len(users_db)} пользователей
 
