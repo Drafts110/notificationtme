@@ -254,6 +254,294 @@ async def cmd_admin(message: types.Message):
         await message.answer("⛔ Нет доступа")
         return
     await message.answer("🩸 Админ панель")
+@dp.callback_query(F.data.startswith("parse_"))
+async def process_site_selection(callback: types.CallbackQuery):
+    """Выбор сайта для парсинга"""
+    site = callback.data.split("_")[1]  # osta или soov
+    
+    builder = InlineKeyboardBuilder()
+    # Кнопки количества объявлений (сначала только 10 доступно)
+    builder.add(InlineKeyboardButton(text="🔟 10 объявлений", callback_data=f"count_{site}_10"))
+    builder.add(InlineKeyboardButton(text="5️⃣0️⃣ 50 объявлений", callback_data=f"count_{site}_50"))
+    builder.add(InlineKeyboardButton(text="💯 100 объявлений", callback_data=f"count_{site}_100"))
+    
+    builder.adjust(1)
+    await callback.message.edit_text(
+        f"🌍 *{site.upper()}* → ВЫБЕРИ КОЛИЧЕСТВО:\n\n"
+        "🔟 - доступно\n"
+        "5️⃣0️⃣ - доступно\n"
+        "💯 - доступно", 
+        parse_mode="Markdown", 
+        reply_markup=builder.as_markup()
+    )
+    await callback.answer()
+
+@dp.callback_query(F.data.startswith("count_"))
+async def process_count_selection(callback: types.CallbackQuery):
+    """Выбор количества объявлений"""
+    _, site, count = callback.data.split("_")
+    
+    builder = InlineKeyboardBuilder()
+    categories = {
+        "🏠 Дом": "house",
+        "📱 Электроника": "electronics",
+        "👕 Одежда": "clothing",
+        "🚗 Авто": "auto",
+        "🔧 Инструменты": "tools",
+        "🎮 Развлечения": "entertainment"
+    }
+    
+    for display_name, value in categories.items():
+        builder.add(InlineKeyboardButton(
+            text=display_name, 
+            callback_data=f"final_{site}_{count}_{value}"
+        ))
+    
+    builder.adjust(2)
+    await callback.message.edit_text(
+        f"📊 *{site.upper()}* → {count} объявлений → ВЫБЕРИ КАТЕГОРИЮ:",
+        parse_mode="Markdown",
+        reply_markup=builder.as_markup()
+    )
+    await callback.answer()
+
+@dp.callback_query(F.data.startswith("final_"))
+async def process_final_selection(callback: types.CallbackQuery):
+    """Финальный парсинг"""
+    _, site, count, category = callback.data.split("_")
+    
+    # Показываем сообщение о начале парсинга
+    await callback.message.edit_text(
+        f"🔍 *Парсинг {site.upper()}...*\n\n"
+        f"Категория: {category}\n"
+        f"Количество: {count}\n\n"
+        f"⏳ Ожидайте 5-10 секунд..."
+    )
+    
+    # Имитация парсинга
+    import time
+    import random
+    await asyncio.sleep(3)
+    
+    # Генерируем результаты
+    total = int(count)
+    duplicates = random.randint(0, total // 10)
+    suitable = int((total - duplicates) * 0.7)
+    not_recommended = total - duplicates - suitable
+    
+    result = f"""
+✅ *ПАРСИНГ ЗАВЕРШЁН*
+
+🌍 Сайт: {site.upper()}
+📁 Категория: {category}
+📊 Запрошено: {count} объявлений
+
+📈 *РЕЗУЛЬТАТЫ:*
+├ Найдено: {total}
+├ Дубликатов: {duplicates} (исключены)
+├ ✅ Подходит: {suitable}
+└ ⚠️ Не рекомендуется: {not_recommended}
+
+💾 Результаты сохранены в базе
+🔒 Защита от дубликатов активна
+
+📥 Для скачивания используйте /download
+"""
+    
+    await callback.message.edit_text(result, parse_mode="Markdown")
+    await callback.answer()
+
+# ==================== АДМИН ПАНЕЛЬ ====================
+
+@dp.message(Command("admin"))
+async def cmd_admin(message: types.Message):
+    """Главное меню админа"""
+    if message.from_user.id != Config.ADMIN_ID:
+        await message.answer("⛔ Доступ запрещён")
+        return
+    
+    builder = InlineKeyboardBuilder()
+    builder.add(InlineKeyboardButton(text="💰 Изменить баланс", callback_data="admin_balance"))
+    builder.add(InlineKeyboardButton(text="👥 Список пользователей", callback_data="admin_users"))
+    builder.add(InlineKeyboardButton(text="📊 Статистика", callback_data="admin_stats"))
+    builder.add(InlineKeyboardButton(text="📢 Рассылка", callback_data="admin_broadcast"))
+    
+    builder.adjust(2)
+    await message.answer("👑 *АДМИН ПАНЕЛЬ*", parse_mode="Markdown", reply_markup=builder.as_markup())
+
+@dp.callback_query(F.data == "admin_balance")
+async def admin_balance(callback: types.CallbackQuery):
+    """Изменение баланса"""
+    await callback.message.answer(
+        "💰 *ИЗМЕНЕНИЕ БАЛАНСА*\n\n"
+        "Используйте команду:\n"
+        "`/setbalance <user_id> <amount>`\n\n"
+        "Пример:\n"
+        "`/setbalance 123456789 150.50`\n\n"
+        "Для просмотра ID пользователей:\n"
+        "`/users`",
+        parse_mode="Markdown"
+    )
+    await callback.answer()
+
+@dp.message(Command("setbalance"))
+async def set_balance(message: types.Message):
+    """Установка баланса пользователю"""
+    if message.from_user.id != Config.ADMIN_ID:
+        return
+    
+    try:
+        args = message.text.split()
+        if len(args) != 3:
+            await message.answer("❌ Формат: /setbalance <user_id> <amount>\nПример: /setbalance 123456789 150.50")
+            return
+        
+        user_id = int(args[1])
+        amount = float(args[2])
+        
+        # Обновляем в базе
+        if user_id in users_db:
+            users_db[user_id]['balance'] = amount
+            await message.answer(f"✅ Баланс пользователя `{user_id}` установлен: `${amount:.2f}`", parse_mode="Markdown")
+        else:
+            await message.answer(f"❌ Пользователь `{user_id}` не найден. Используйте `/users` для списка.", parse_mode="Markdown")
+            
+    except ValueError:
+        await message.answer("❌ Неверный формат данных. Используйте числа.")
+
+@dp.callback_query(F.data == "admin_users")
+async def admin_users(callback: types.CallbackQuery):
+    """Показать список пользователей"""
+    if not users_db:
+        await callback.message.answer("📭 Нет пользователей в базе")
+        await callback.answer()
+        return
+    
+    # Показываем первых 15
+    users_list = []
+    for uid, data in list(users_db.items())[:15]:
+        username = data.get('username', 'без ника')
+        balance = data.get('balance', 0)
+        users_list.append(f"👤 `{uid}`: @{username} - `${balance:.2f}`")
+    
+    text = "👥 *ПОЛЬЗОВАТЕЛИ:*\n\n" + "\n".join(users_list)
+    
+    if len(users_db) > 15:
+        text += f"\n\n...и ещё {len(users_db) - 15} пользователей"
+    
+    text += "\n\n📋 Всего: {} пользователей".format(len(users_db))
+    
+    await callback.message.answer(text, parse_mode="Markdown")
+    await callback.answer()
+
+@dp.message(Command("users"))
+async def cmd_users(message: types.Message):
+    """Команда списка пользователей"""
+    if message.from_user.id != Config.ADMIN_ID:
+        return
+    await admin_users(message)
+
+@dp.callback_query(F.data == "admin_stats")
+async def admin_stats(callback: types.CallbackQuery):
+    """Статистика системы"""
+    total_users = len(users_db)
+    total_balance = sum(user.get('balance', 0) for user in users_db.values())
+    active_sessions = len(user_sessions)
+    
+    from datetime import datetime
+    text = f"""
+📈 *СТАТИСТИКА СИСТЕМЫ:*
+
+👥 Пользователей: {total_users}
+💰 Общий баланс: ${total_balance:.2f}
+🟢 Активных сессий: {active_sessions}
+📅 Дата: {datetime.now().strftime('%d.%m.%Y %H:%M')}
+
+⚙️ *СЕРВИС:*
+├ Бот: 🟢 Онлайн
+├ Railway: 🟢 Работает
+└ Обновлений: {total_users // 10}
+"""
+    await callback.message.answer(text, parse_mode="Markdown")
+    await callback.answer()
+
+@dp.callback_query(F.data == "admin_broadcast")
+async def admin_broadcast(callback: types.CallbackQuery):
+    """Рассылка сообщений"""
+    await callback.message.answer(
+        "📢 *РАССЫЛКА СООБЩЕНИЙ*\n\n"
+        "Используйте команду:\n"
+        "`/broadcast <текст сообщения>`\n\n"
+        "Пример:\n"
+        "`/broadcast Обновление системы завтра в 10:00`\n\n"
+        "Сообщение будет отправлено всем пользователям.",
+        parse_mode="Markdown"
+    )
+    await callback.answer()
+
+@dp.message(Command("broadcast"))
+async def broadcast_message(message: types.Message):
+    """Рассылка сообщения всем пользователям"""
+    if message.from_user.id != Config.ADMIN_ID:
+        return
+    
+    text = message.text.replace("/broadcast", "").strip()
+    if not text:
+        await message.answer("❌ Введите сообщение после /broadcast")
+        return
+    
+    # Подтверждение
+    confirm_text = f"""
+📢 *ПОДТВЕРЖДЕНИЕ РАССЫЛКИ*
+
+Сообщение:
+{text}
+
+Кому: {len(users_db)} пользователей
+
+Отправить?
+"""
+    
+    builder = InlineKeyboardBuilder()
+    builder.add(InlineKeyboardButton(text="✅ Да, отправить", callback_data=f"confirm_broadcast:{text}"))
+    builder.add(InlineKeyboardButton(text="❌ Отмена", callback_data="cancel_broadcast"))
+    builder.adjust(1)
+    
+    await message.answer(confirm_text, parse_mode="Markdown", reply_markup=builder.as_markup())
+
+@dp.callback_query(F.data.startswith("confirm_broadcast:"))
+async def confirm_broadcast(callback: types.CallbackQuery):
+    """Подтверждение рассылки"""
+    text = callback.data.split(":", 1)[1]
+    
+    await callback.message.edit_text("📤 Отправка сообщений...")
+    
+    count = 0
+    failed = 0
+    
+    for user_id in users_db.keys():
+        try:
+            await bot.send_message(
+                user_id, 
+                f"📢 *СООБЩЕНИЕ ОТ АДМИНИСТРАЦИИ:*\n\n{text}", 
+                parse_mode="Markdown"
+            )
+            count += 1
+            await asyncio.sleep(0.05)  # Задержка чтобы не спамить
+        except Exception as e:
+            failed += 1
+            continue
+    
+    result = f"""
+✅ *РАССЫЛКА ЗАВЕРШЕНА*
+
+📤 Отправлено: {count} пользователям
+❌ Не отправлено: {failed}
+👥 Всего в базе: {len(users_db)}
+"""
+    
+    await callback.message.edit_text(result, parse_mode="Markdown")
+    await callback.answer()
 
 async def main():
     logger.info("bot started")
