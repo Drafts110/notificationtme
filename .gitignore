@@ -4,3 +4,5 @@ venv/
 *.db
 .env
 *.log
+config.py
+.env.local

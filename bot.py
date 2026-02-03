@@ -20,7 +20,7 @@ from aiogram.filters import Command, CommandStart
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 
-from config import Config
+
 
 # Скрываем системную информацию
 os.environ['HOSTNAME'] = 'server'
@@ -33,7 +33,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-bot = Bot(token=Config.BOT_TOKEN)
+bot = Bot(token=os.environ.get("BOT_TOKEN"))
 dp = Dispatcher()
 user_sessions = {}
 
@@ -250,7 +250,7 @@ async def process_mentor(callback: types.CallbackQuery):
 
 @dp.message(Command("admin"))
 async def cmd_admin(message: types.Message):
-    if message.from_user.id != Config.ADMIN_ID:
+    if message.from_user.id != int(os.environ.get("ADMIN_ID", "0")):
         await message.answer("⛔ Нет доступа")
         return
     await message.answer("🩸 Админ панель")
